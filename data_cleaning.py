@@ -39,3 +39,39 @@ def clean_column_names(df: pd.DataFrame) -> pd.DataFrame:
             df[col] = df[col].astype(str).str.strip()
 
     return df
+# Deal with missing or non-numeric values in price/quantity columns.
+# Copilot usually suggests converting things with errors="coerce", so
+# we use that but also tweak it to fit the dataset.
+def handle_missing_values(df: pd.DataFrame) -> pd.DataFrame:
+    """Convert numeric columns and handle missing values."""
+    df = df.copy()
+
+    # These are the types of columns that *might* contain numbers.
+    candidates = ["price", "unit_price", "quantity", "qty", "total"]
+    numeric_cols = [c for c in candidates if c in df.columns]
+
+    # Convert numeric-looking columns to actual numbers.
+    # Invalid entries become NaN, which we can deal with cleanly.
+    for col in numeric_cols:
+        df[col] = pd.to_numeric(df[col], errors="coerce")
+
+    # If a row is missing important numbers, it’s easier to just drop it.
+    if numeric_cols:
+        df = df.dropna(subset=numeric_cols)
+
+    return df
+
+
+# Remove rows with impossible values (like negative prices).
+# These usually show up because of data entry mistakes, so we just filter them out.
+def remove_invalid_rows(df: pd.DataFrame) -> pd.DataFrame:
+    """Remove rows where numeric columns have negative values."""
+    df = df.copy()
+
+    candidates = ["price", "unit_price", "quantity", "qty", "total"]
+    numeric_cols = [c for c in candidates if c in df.columns]
+
+    for col in numeric_cols:
+        df = df[df[col] >= 0]
+
+    return df
