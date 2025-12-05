@@ -75,3 +75,19 @@ def remove_invalid_rows(df: pd.DataFrame) -> pd.DataFrame:
         df = df[df[col] >= 0]
 
     return df
+# This lets us run everything from the terminal in one go.
+# It loads the raw file, runs the cleaning steps, saves the cleaned version,
+# and prints a preview so we can quickly see if things look better.
+if __name__ == "__main__":
+    raw_path = "data/raw/sales_data_raw.csv"
+    cleaned_path = "data/processed/sales_data_clean.csv"
+
+    df_raw = load_data(raw_path)
+    df_clean = clean_column_names(df_raw)
+    df_clean = handle_missing_values(df_clean)
+    df_clean = remove_invalid_rows(df_clean)
+
+    df_clean.to_csv(cleaned_path, index=False)
+
+    print("Cleaning complete. First few rows:")
+    print(df_clean.head())
